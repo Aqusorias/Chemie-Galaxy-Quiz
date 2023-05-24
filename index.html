@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Galaxy Quiz</title>
+    <style>
+        body {
+            background-image: url("galaxy.png");
+            background-size: cover;
+            color: white;
+        }
+        #quiz {
+            display: none;
+        }
+        #results {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="start">
+        <input type="text" id="username" placeholder="Benutzernamen eingeben">
+        <button onclick="startQuiz()">Quiz starten</button>
+    </div>
+    <div id="quiz">
+        <!-- Quiz wird hier dynamisch erstellt -->
+    </div>
+    <div id="results">
+        <!-- Ergebnisse werden hier angezeigt -->
+    </div>
+    <script>
+        var username;
+        var questions = [
+            {
+                text: "Wie viele Planeten gibt es im Sonnensystem?",
+                answers: ["7", "9", "8", "6"],
+                correctAnswer: 2
+            },
+            {
+                text: "Zwischen welchen Planeten liegt der Asteroidengürtel?",
+                answers: ["Mars – Jupiter", "Merkur – Venus", "Saturn - Uranus", "Jupiter – Saturn"],
+                correctAnswer: 0
+            },
+            {
+                text: "Wie entsteht ein Schwarzes Loch?",
+                answers: ["Zusammenbruch eines Planeten", "Kollaps eines massereichen Sterns", "Zusammenstoß zweier Galaxien", "Kollaps unserer Sonne"],
+                correctAnswer: 1
+            },
+            {
+                text: "Wie vergeht die Zeit in der Nähe eines Schwarzes Lochs?",
+                answers: ["Langsamer", "Schneller"],
+                correctAnswer: 0
+            },
+            {
+                text: "Wie viele Galaxien hat das Universum?",
+                answers: ["2 Milliarden", "3 Billionen", "2 Billionen", "3 Milliarden"],
+                correctAnswer: 2
+            },
+            {
+                text: "Welche dieser Galaxien gibt es?",
+                answers: ["Spiralgalaxien, elliptische Galaxien, irreguläre Galaxien", "Reguläre Galaxien, elliptische Galaxien, Prismagalaxien", "Epileptische Galaxien, reguläre Galaxien, Spiralgalaxien", "Reguläre Galaxien, Prismagalaxien, Epileptische Galaxien"],
+                correctAnswer: 0
+            },
+            {
+                text: "Wie viele Sterne sind in einer Galaxie?",
+                answers: ["Millionen bis Milliarden", "Milliarden bis Billionen", "Billionen bis Milliarden"],
+                correctAnswer: 1
+            },
+            {
+                text: "Welche zwei Arten von Schwarzen Löchern gibt es?",
+                answers: [],
+                correctAnswer: ["Stellare Schwarze Löcher", "Massereiche Schwarze Löcher"], // Die korrekten Antworten hier einfügen.
+                input: true
+            },
+            {
+                text: "Woraus besteht ein Stern? (Mehrfach Auswahl)",
+                answers: ["Heißes Gas", "Biogas", "Glühendes Gas", "Flüssiggas"],
+                correctAnswer: [0, 2], // Die Indizes der korrekten Antworten.
+                multipleChoice: true
+            },
+            {
+                text: "Welche dieser Supernovae gibt es? (Mehrfach Auswahl)",
+                answers: ["Anti-Kollaps-Supernova", "Kollaps-Supernova", "Thermonukleare Supernova", "Thermische Supernova"],
+                correctAnswer: [1, 2], // Die Indizes der korrekten Antworten.
+                multipleChoice: true
+            }
+        ];
+        var currentQuestion = 0;
+        var answers = [];
+
+        function startQuiz() {
+            username = document.getElementById("username").value;
+            if (!username) {
+                alert("Bitte Benutzernamen eingeben.");
+                return;
+            }
+            document.getElementById("start").style.display = "none";
+            document.getElementById("quiz").style.display = "block";
+            showQuestion();
+        }
+
+        function showQuestion() {
+            var question = questions[currentQuestion];
+            var quizDiv = document.getElementById("quiz");
+            quizDiv.innerHTML = '';
+            var questionElement = document.createElement("h2");
+            questionElement.textContent = question.text;
+            quizDiv.appendChild(questionElement);
+            if (question.input) {
+                var answerElement = document.createElement("input");
+                answerElement.type = "text";
+                answerElement.id = "inputAnswer";
+                quizDiv.appendChild(answerElement);
+            } else {
+                for (var i = 0; i < question.answers.length; i++) {
+                    var answerElement;
+                    if (question.multipleChoice) {
+                        answerElement = document.createElement("input");
+                        answerElement.type = "checkbox";
+                        answerElement.id = "answer" + i;
+                        var label = document.createElement("label");
+                        label.htmlFor = "answer" + i;
+                        label.textContent = question.answers[i];
+                        quizDiv.appendChild(answerElement);
+                        quizDiv.appendChild(label);
+                        quizDiv.appendChild(document.createElement("br"));
+                    } else {
+                        answerElement = document.createElement("button");
+                        answerElement.textContent = question.answers[i];
+                        answerElement.onclick = chooseAnswer.bind(this, i);
+                        quizDiv.appendChild(answerElement);
+                    }
+                }
+            }
+            if (question.input || question.multipleChoice) {
+                var submitButton = document.createElement("button");
+                submitButton.textContent = "Submit";
+                submitButton.onclick = submitAnswer;
+                quizDiv.appendChild(submitButton);
+            }
+        }
+
+        function chooseAnswer(answer) {
+            answers.push(answer);
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function submitAnswer() {
+            var question = questions[currentQuestion];
+            if (question.input) {
+                var inputAnswer = document.getElementById("inputAnswer").value;
+                answers.push(inputAnswer);
+            } else if (question.multipleChoice) {
+                var selectedAnswers = [];
+                for (var i = 0; i < question.answers.length; i++) {
+                    if (document.getElementById("answer" + i).checked) {
+                        selectedAnswers.push(i);
+                    }
+                }
+                answers.push(selectedAnswers);
+            }
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById("quiz").style.display = "none";
+            var resultsDiv = document.getElementById("results");
+            resultsDiv.style.display = "block";
+            var correctAnswers = 0;
+            var resultsText = "Sie haben folgende Fragen richtig beantwortet:<br><br>";
+
+            for (var i = 0; i < questions.length; i++) {
+                var question = questions[i];
+                var answer = answers[i];
+
+                resultsText += "Frage: " + question.text + "<br>";
+                resultsText += "Ihre Antwort: " + getAnswerText(question, answer) + "<br>";
+                resultsText += "Korrekte Antwort: " + getAnswerText(question, question.correctAnswer) + "<br><br>";
+
+                if (Array.isArray(question.correctAnswer)) {
+                    if (Array.isArray(answer)) {
+                        if (answer.sort().toString() === question.correctAnswer.sort().toString()) {
+                            correctAnswers++;
+                        }
+                    } else if (question.correctAnswer.includes(answer)) {
+                        correctAnswers++;
+                    }
+                } else if (question.correctAnswer === answer) {
+                    correctAnswers++;
+                }
+            }
+
+            resultsText += "Sie haben " + correctAnswers + " von " + questions.length + " Fragen richtig beantwortet.";
+
+            resultsDiv.innerHTML = resultsText;
+            // Senden Sie die Daten hier an Ihren Server
+        }
+
+        function getAnswerText(question, answer) {
+            if (question.input) {
+                return answer;
+            } else if (question.multipleChoice) {
+                var answerText = "";
+                for (var i = 0; i < answer.length; i++) {
+                    answerText += question.answers[answer[i]];
+                    if (i < answer.length - 1) {
+                        answerText += ", ";
+                    }
+                }
+                return answerText;
+            } else {
+                return question.answers[answer];
+            }
+        }
+    </script>
+</body>
+</html>
